@@ -1,0 +1,41 @@
+{
+    "name": "webmenedzser/feed-me-medium-featured-image",
+    "description": "Adds featured image to Medium.com feed - Feed Me plugin",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "parse medium featured image - feed me plugin"
+    ],
+    "support": {
+        "docs": "https://github.com/webmenedzser/feed-me-medium-featured-image/blob/master/README.md",
+        "issues": "https://github.com/webmenedzser/feed-me-medium-featured-image/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ottó Radics",
+            "homepage": "https://www.webmenedzser.hu"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0",
+        "craftcms/feed-me": "^4.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "webmenedzser\\feedmemediumfeaturedimage\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Feed Me - Medium.com featured image",
+        "handle": "feed-me-medium-featured-image",
+        "hasCpSettings": false,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/webmenedzser/feed-me-medium-featured-image/master/CHANGELOG.md",
+        "class": "webmenedzser\\feedmemediumfeaturedimage\\FeedMeMediumFeaturedImage"
+    }
+}
