@@ -69,7 +69,7 @@ class FeedMeMediumFeaturedImage extends Plugin
      *
      * @var array
      */
-    public $images = [];
+    public $data = [];
 
     /*
      * Count the items in the feed
@@ -105,7 +105,8 @@ class FeedMeMediumFeaturedImage extends Plugin
                     $xml = $event->response['data'];
 
                     $this->urls = $this->_findURLs($xml);
-                    $this->images = $this->_getMediumImages($this->urls);
+                    $this->data['images'] = $this->_getMediumImages($this->urls);
+                    $this->data['descriptions'] = $this->_getMediumDescriptions($this->urls);
                 }
             }
         });
@@ -113,7 +114,8 @@ class FeedMeMediumFeaturedImage extends Plugin
         Event::on(DataTypes::class, DataTypes::EVENT_AFTER_PARSE_FEED, function(FeedDataEvent $event) {
             if ($event->response['success']) {
                 for ($i = 0; $i < $this->count; $i++) {
-                    $event->response['data'][$i]['mediumFeaturedImage'] = $this->images[$i];
+                    $event->response['data'][$i]['mediumFeaturedImage'] = $this->data['images'][$i];
+                    $event->response['data'][$i]['mediumDescription'] = $this->data['descriptions'][$i];
                 }
             }
         });
@@ -125,9 +127,9 @@ class FeedMeMediumFeaturedImage extends Plugin
     private function _isMediumFeed($feedUrl) {
         if (strpos($feedUrl, 'medium.com')) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     private function _findURLs($xml) {
@@ -143,25 +145,45 @@ class FeedMeMediumFeaturedImage extends Plugin
         return $urls;
     }
 
+    private function _loadXPath($url) {
+        $contentDoc = new \DOMDocument();
+
+        // Workaround for "Tag figure invalid in Entity" error
+        // https://stackoverflow.com/questions/6090667/php-domdocument-errors-warnings-on-html5-tags
+        libxml_use_internal_errors(true);
+        $contentDoc->loadHTMLFile($url);
+        libxml_clear_errors();
+
+        // Fetch actual page & parse <head>, looking for og:image
+        $xpath = new \DOMXPath($contentDoc);
+
+        return $xpath;
+    }
+
     private function _getMediumImages($urls) {
         $images = [];
 
         foreach ($urls as $url) {
-            $contentDoc = new \DOMDocument();
+            $xpath = $this->_loadXPath($url);
 
-            // Workaround for "Tag figure invalid in Entity" error
-            // https://stackoverflow.com/questions/6090667/php-domdocument-errors-warnings-on-html5-tags
-            libxml_use_internal_errors(true);
-            $contentDoc->loadHTMLFile($url);
-            libxml_clear_errors();
-
-            // Fetch actual page & parse <head>, looking for og:image
-            $xpath = new \DOMXPath($contentDoc);
             $image = $xpath->evaluate('string(//meta[@property="og:image"]/@content)');
             $images[] = $image;
         }
 
         return $images;
+    }
+
+    private function _getMediumDescriptions($urls) {
+        $descriptions = [];
+
+        foreach ($urls as $url) {
+            $xpath = $this->_loadXPath($url);
+
+            $description = $xpath->evaluate('string(//meta[@name="description"]/@content)');
+            $descriptions[] = $description;
+        }
+
+        return $descriptions;
     }
 
     private function _writeLogs($message) {
